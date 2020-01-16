@@ -4,7 +4,7 @@ const Spinner = () =>{
 
     return (
         <div className="spinner-border" role="status">
-            <span class="sr-only">Loading...</span>
+            <span className="sr-only">Loading...</span>
         </div>
     )
 }

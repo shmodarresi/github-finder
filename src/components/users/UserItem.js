@@ -1,4 +1,4 @@
-import React, { Component } from 'react'
+import React from 'react'
 
 const UserItem = ({user:{login, avatar_url, html_url}}) => {
     return (
