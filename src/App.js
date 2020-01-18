@@ -1,7 +1,10 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
+import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
+
 import github from './api/github';
 import Navbar from './components/layout/Navbar';
 import Users from './components/users/Users';
+import User from './components/users/User';
 import SearchBar from './components/search/SearchBar';
 import Alert from './components/layout/Alert';
 import './App.scss';
@@ -9,7 +12,7 @@ import './App.scss';
 
 class App extends Component {
 
-  state = { users: [], loading: false, alert: null };
+  state = { users: [], user:{}, loading: false, alert: null };
 
   onSearchSubmit = async term => {
     //console.log(term);
@@ -18,21 +21,27 @@ class App extends Component {
       this.setState({ loading: true });
 
       const response = await github.get(`/search/users?client_id=${process.env.REACT_APP_CLIENT_ID}&
-  client_secret=${process.env.REACT_APP_CLIENT_SECRET}`, {
+      client_secret=${process.env.REACT_APP_CLIENT_SECRET}`, {
         params: { q: term }
       });
 
       this.setState({ users: response.data.items, loading: false });
     } else {
-      const alrt={msg:'Please enter something!',type:'secondary'};
-      
-      this.setState({alert:alrt});
+      const alrt = { msg: 'Please enter something!', type: 'secondary' };
 
-      setTimeout(()=>{this.setState({alert:null})}, 5000);
+      this.setState({ alert: alrt });
+
+      setTimeout(() => { this.setState({ alert: null }) }, 5000);
     }
+  }
 
+  getUser = async userName => {
+    this.setState({ loading: true });
 
-    //console.log(response.data.items);
+    const response = await github.get(`/users/${userName}?client_id=${process.env.REACT_APP_CLIENT_ID}&
+    client_secret=${process.env.REACT_APP_CLIENT_SECRET}`);
+
+    this.setState({ user: response.data, loading: false });
   }
 
   clearUsers = () => this.setState({ users: [], loading: false });
@@ -40,22 +49,30 @@ class App extends Component {
   render() {
 
     //let name='Shohreh';
-    const { users, loading,alert } = this.state;
-
+    const { users, user, loading, alert } = this.state;
     return (
-      <div className="App">
-        {/* <Navbar title="Github Finder" icon="fa fa-github"/> */}
-        <Navbar />
-        <div className="container">
-          <Alert alert={alert} />
-          <SearchBar searchUsers={this.onSearchSubmit} clearUsers={this.clearUsers}
-            showClear={users.length > 0 ? true : false} />
-          users: {users.length}
-          <br />
-          {/* <Users users={this.response.data.items} /> */}
-          <Users users={users} loading={loading} />
+      <Router>
+        <div className="App">
+          <Navbar />
+          <div className="container py-1">
+            <Alert alert={alert} />
+            <Switch>
+              <Route exact path="/" render={props => (
+                <Fragment>
+                  <SearchBar searchUsers={this.onSearchSubmit} clearUsers={this.clearUsers}
+                    showClear={users.length > 0 ? true : false} />
+                  users: {users.length}
+                  <br />
+                  <Users users={users} loading={loading} />
+                </Fragment>
+              )} />
+              <Route exact path="/user/:username" render={props => (
+                <User { ...props } getUser={this.getUser} user={user} loading={loading} />
+              )} />
+            </Switch>
+          </div>
         </div>
-      </div>
+      </Router>
     );
   }
 }
