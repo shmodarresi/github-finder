@@ -13,7 +13,7 @@ class User extends Component {
         if(this.props.loading){
 
             return <Spinner/>  
-              
+
        }else{
 
         return (
